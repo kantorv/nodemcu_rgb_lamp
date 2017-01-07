@@ -45,10 +45,11 @@ $("#full").spectrum({
     },
     change: function(color){
             console.log(color);
-            var hex_value = color.toHexString();
-            if(!color){
-                hex_value = "#000000"; //black shuts rgb down
+            var hex_value  = "#000000";  //black shuts rgb down
+            if(color){
+                hex_value = color.toHexString();
             }
+
 
             $.ajax({
                 url : "/setcolor",
