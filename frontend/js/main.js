@@ -22,6 +22,7 @@ $(document).ready(function(){
 
 $("#full").spectrum({
     allowEmpty:true,
+    flat:true,
     color: "#ECC",
     showInput: true,
     className: "full-spectrum",
