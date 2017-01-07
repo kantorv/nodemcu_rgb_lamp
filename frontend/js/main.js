@@ -8,7 +8,7 @@ $(document).ready(function(){
             $.ajax({
                 url : "/setcolor",
                 type: "GET",
-                data : {color:hex_value},
+                data : {color:hex_value.replace('#','')},
                 success : function(resp){
                     console.log('success', resp)
                 },
