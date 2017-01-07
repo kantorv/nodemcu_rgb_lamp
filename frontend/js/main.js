@@ -82,4 +82,24 @@ $("#full").spectrum({
     ]
 });
 
+
+
+    $( "#slider" ).slider({
+      slide: function( event, ui ) {
+        console.log( ui.value );
+        $.ajax({
+            url : "/brightness",
+            type: "POST",
+            data : {brightness:ui.value},
+            success : function(resp){
+                console.log('success', resp)
+            },
+            failure : function(data){
+                console.log('failure', data)
+            }
+        })
+      }
+    })
+
+
 })
