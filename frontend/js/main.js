@@ -1,8 +1,9 @@
 $(document).ready(function(){
 
-    var last_hex_value;
+    var last_hex_value,
+        picker_change_progress;
 
-    console.log('ready');
+    console.log('ready 111');
     $('#custom').spectrum(
     {
         allowEmpty:true,
@@ -23,16 +24,35 @@ $(document).ready(function(){
     });
 
 
+
+
+var setColor = function(hex_value){
+    console.log("setColor called", hex_value)
+    $.ajax({
+            url : "/setcolor",
+            type: "GET",
+            data : {color:hex_value.replace('#','')},
+            success : function(resp){
+                console.log('setColor success', resp);
+                 last_hex_value = hex_value;
+            },
+            failure : function(data){
+                console.log('setColor failure', data)
+            }
+    })
+}
 $("#full").spectrum({
-    allowEmpty:true,
+    allowEmpty:false,
     flat:true,
     color: "#ECC",
     showInput: true,
     className: "full-spectrum",
+    clickoutFiresChange: true,
     showInitial: true,
     showPalette: true,
-    showSelectionPalette: true,
-    maxSelectionSize: 10,
+     showSelectionPalette: true,
+      showButtons: false,
+    //maxSelectionSize: 10,
     preferredFormat: "hex",
     localStorageKey: "spectrum.demo",
     move: function (color) {
@@ -42,38 +62,37 @@ $("#full").spectrum({
 
     },
     beforeShow: function () {
-
+         console.log("spectrum beforeShow called");
     },
     hide: function () {
 
     },
     change: function(color){
-            console.log(color);
-            var hex_value ;
+            console.log("spectrum change called",color);
+
+            var hex_value, rgb_value ;
             if(color){
                 hex_value = color.toHexString();
                 if(hex_value == last_hex_value){
                     console.log("no changes, returning");
                     return true;
                 }
+
+             rgb_value = color.toRgb();
+                picker_change_progress = true;
+               $( "#red" ).slider( "value", rgb_value.r );
+               $( "#green" ).slider( "value",  rgb_value.g );
+                picker_change_progress = false;
+               $( "#blue" ).slider( "value",  rgb_value.b )
+
             }
+
             else {
                  hex_value  = "#000000";  //black shuts rgb down
             }
 
 
-            $.ajax({
-                url : "/setcolor",
-                type: "GET",
-                data : {color:hex_value.replace('#','')},
-                success : function(resp){
-                    console.log('success', resp);
-                     last_hex_value = hex_value;
-                },
-                failure : function(data){
-                    console.log('failure', data)
-                }
-            })
+            setColor(hex_value);
     },
     palette: [
         ["rgb(0, 0, 0)", "rgb(67, 67, 67)", "rgb(102, 102, 102)",
@@ -103,7 +122,7 @@ $("#full").spectrum({
       value:100,
       slide: function( event, ui ) {
         console.log( ui.value );
-        if(req_in_progress){
+        if(req_in_progress === true){
             console.log('req in progress');
             last_br_value = ui.value;
             return true;
@@ -122,11 +141,12 @@ $("#full").spectrum({
             },
             complete  : function(data){
                 console.log('complete', data);
-                req_in_progress = false;
+
             }
 
         }).done(function(e) {
            console.log( "/brightness req finished", e );
+            req_in_progress = false;
         })
       }
     });
@@ -145,26 +165,60 @@ $("#full").spectrum({
       });
       return hex.join( "" ).toUpperCase();
     }
+
+
     function refreshSwatch() {
+    console.log("refreshSwatch called", arguments)
+      if(picker_change_progress){
+        console.log("picker_change_progress is true, returning")
+        return true;
+      }
+      //slide2_req_in_progress = true;
       var red = $( "#red" ).slider( "value" ),
         green = $( "#green" ).slider( "value" ),
         blue = $( "#blue" ).slider( "value" ),
         hex = hexFromRGB( red, green, blue );
       $( "#swatch" ).css( "background-color", "#" + hex );
-      console.log("received:", red, green, blue, "\nhex:". hex);
+      console.log("received:", red, green, blue, "\nhex:", hex, "\npicker_change_progress",picker_change_progress);
+      $('#full').spectrum("set", hex) // seems spectrum's change is not being called if color wasn't changed
+
+
+
     }
+
+/*
+
+    function refreshSwatchSlide() {
+    console.log("refreshSwatchSlide called", arguments)
+      if(picker_change_progress){
+        console.log("picker_change_progress is true, returning")
+        return true;
+      }
+      //slide2_req_in_progress = true;
+      var red = $( "#red" ).slider( "value" ),
+        green = $( "#green" ).slider( "value" ),
+        blue = $( "#blue" ).slider( "value" ),
+        hex = hexFromRGB( red, green, blue );
+      $( "#swatch" ).css( "background-color", "#" + hex );
+      console.log("received:", red, green, blue, "\nhex:", hex, "\npicker_change_progress",picker_change_progress);
+
+
+
+    }
+    */
+
 
     $( "#red, #green, #blue" ).slider({
       orientation: "horizontal",
       range: "min",
       max: 255,
       value: 127,
-      slide: refreshSwatch,
+     // slide: refreshSwatchSlide,
       change: refreshSwatch
     });
-    $( "#red" ).slider( "value", 255 );
-    $( "#green" ).slider( "value", 140 );
-    $( "#blue" ).slider( "value", 60 );
+   // $( "#red" ).slider( "value", 255 );
+   // $( "#green" ).slider( "value", 140 );
+  //  $( "#blue" ).slider( "value", 60 );
 
 
 
