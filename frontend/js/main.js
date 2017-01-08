@@ -53,7 +53,8 @@ $("#full").spectrum({
             if(color){
                 hex_value = color.toHexString();
                 if(hex_value == last_hex_value){
-                    console.log("no changes, returning")
+                    console.log("no changes, returning");
+                    return true;
                 }
             }
             else {
@@ -97,6 +98,9 @@ $("#full").spectrum({
         last_br_value = 0;
 
     $( "#slider" ).slider({
+      min:0,
+      max:100,
+      value:100,
       slide: function( event, ui ) {
         console.log( ui.value );
         if(req_in_progress){
@@ -111,7 +115,7 @@ $("#full").spectrum({
             type: "POST",
             data : {brightness:ui.value},
             success : function(resp){
-                console.log('success', resp)
+                console.log('success', resp);
             },
             error : function(data){
                 console.log('failure', data)
@@ -119,7 +123,7 @@ $("#full").spectrum({
             complete  : function(data){
                 console.log('complete', data);
                 req_in_progress = false;
-            },
+            }
 
         }).done(function(e) {
            console.log( "/brightness req finished", e );
