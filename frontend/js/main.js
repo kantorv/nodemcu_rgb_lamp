@@ -83,10 +83,19 @@ $("#full").spectrum({
 });
 
 
+    var req_in_progress = false,
+        last_br_value = 0;
 
     $( "#slider" ).slider({
       slide: function( event, ui ) {
         console.log( ui.value );
+        if(req_in_progress){
+            console.log('req in progress');
+            last_br_value = ui.value;
+            return true;
+        }
+        req_in_progress = true;
+
         $.ajax({
             url : "/brightness",
             type: "POST",
@@ -94,12 +103,56 @@ $("#full").spectrum({
             success : function(resp){
                 console.log('success', resp)
             },
-            failure : function(data){
+            error : function(data){
                 console.log('failure', data)
-            }
+            },
+            complete  : function(data){
+                console.log('complete', data);
+                req_in_progress = false;
+            },
+
+        }).done(function(e) {
+           console.log( "/brightness req finished", e );
         })
       }
-    })
+    });
 
 
-})
+      function hexFromRGB(r, g, b) {
+      var hex = [
+        r.toString( 16 ),
+        g.toString( 16 ),
+        b.toString( 16 )
+      ];
+      $.each( hex, function( nr, val ) {
+        if ( val.length === 1 ) {
+          hex[ nr ] = "0" + val;
+        }
+      });
+      return hex.join( "" ).toUpperCase();
+    }
+    function refreshSwatch() {
+      var red = $( "#red" ).slider( "value" ),
+        green = $( "#green" ).slider( "value" ),
+        blue = $( "#blue" ).slider( "value" ),
+        hex = hexFromRGB( red, green, blue );
+      $( "#swatch" ).css( "background-color", "#" + hex );
+      console.log("received:", red, green, blue, "\nhex:". hex);
+    }
+
+    $( "#red, #green, #blue" ).slider({
+      orientation: "horizontal",
+      range: "min",
+      max: 255,
+      value: 127,
+      slide: refreshSwatch,
+      change: refreshSwatch
+    });
+    $( "#red" ).slider( "value", 255 );
+    $( "#green" ).slider( "value", 140 );
+    $( "#blue" ).slider( "value", 60 );
+
+
+
+
+});
