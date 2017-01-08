@@ -1,4 +1,7 @@
 $(document).ready(function(){
+
+    var last_hex_value;
+
     console.log('ready');
     $('#custom').spectrum(
     {
@@ -46,9 +49,15 @@ $("#full").spectrum({
     },
     change: function(color){
             console.log(color);
-            var hex_value  = "#000000";  //black shuts rgb down
+            var hex_value ;
             if(color){
                 hex_value = color.toHexString();
+                if(hex_value == last_hex_value){
+                    console.log("no changes, returning")
+                }
+            }
+            else {
+                 hex_value  = "#000000";  //black shuts rgb down
             }
 
 
@@ -57,7 +66,8 @@ $("#full").spectrum({
                 type: "GET",
                 data : {color:hex_value.replace('#','')},
                 success : function(resp){
-                    console.log('success', resp)
+                    console.log('success', resp);
+                     last_hex_value = hex_value;
                 },
                 failure : function(data){
                     console.log('failure', data)
