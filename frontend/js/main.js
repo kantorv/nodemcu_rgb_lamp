@@ -3,31 +3,22 @@ $(document).ready(function(){
     var last_hex_value,
         picker_change_progress;
 
-    console.log('ready 111');
-    $('#custom').spectrum(
-    {
-        allowEmpty:true,
-        change: function(color){
-            var hex_value = color.toHexString();
-            $.ajax({
-                url : "/setcolor",
-                type: "GET",
-                data : {color:hex_value.replace('#','')},
-                success : function(resp){
-                    console.log('success', resp)
-                },
-                failure : function(data){
-                    console.log('failure', data)
-                }
-            })
-        }
-    });
+
+
+
+    console.log('ready');
+
 
 
 
 
 var setColor = function(hex_value){
-    console.log("setColor called", hex_value)
+    console.log("setColor called", hex_value, last_hex_value)
+    if(last_hex_value == hex_value){
+        console.log('repeated call detected, returning');
+        return true;
+    }
+    last_hex_value = hex_value;
     $.ajax({
             url : "/setcolor",
             type: "GET",
@@ -41,6 +32,42 @@ var setColor = function(hex_value){
             }
     })
 }
+
+
+var getData = function(){
+    console.log("getData called")
+    $.ajax({
+            url : "/settings",
+            type: "GET",
+            success : function(resp){
+                var red,green,blue, hex, brightness;
+
+                console.log('getData success', resp);
+                if(resp.rgb){
+                    console.log('rgb exists, setting value',resp.rgb );
+                    [red,green,blue] = resp.rgb.split(":").map(function(value){return parseInt(value)});
+                    last_hex_value = "#" + hexFromRGB( red, green, blue ).toLowerCase();
+                    $('#full').spectrum("set", last_hex_value)
+
+                        picker_change_progress = true;
+                       $( "#red" ).slider( "value", red );
+                       $( "#green" ).slider( "value", green);
+                        picker_change_progress = false;
+                       $( "#blue" ).slider( "value",  blue )
+                }
+                if(resp.brightness){
+                    brightness = parseInt(resp.brightness);
+                    $("#slider").slider("value", brightness);
+
+                }
+                // last_hex_value = hex_value;
+            },
+            failure : function(data){
+                console.log('getData failure', data)
+            }
+    })
+}
+
 $("#full").spectrum({
     allowEmpty:false,
     flat:true,
@@ -51,7 +78,7 @@ $("#full").spectrum({
     showInitial: true,
     showPalette: true,
      showSelectionPalette: true,
-      showButtons: false,
+      showButtons: true,
     //maxSelectionSize: 10,
     preferredFormat: "hex",
     localStorageKey: "spectrum.demo",
@@ -177,13 +204,11 @@ $("#full").spectrum({
       var red = $( "#red" ).slider( "value" ),
         green = $( "#green" ).slider( "value" ),
         blue = $( "#blue" ).slider( "value" ),
-        hex = hexFromRGB( red, green, blue );
+        hex = "#" + hexFromRGB( red, green, blue ).toLowerCase();
+        setColor(hex);
       $( "#swatch" ).css( "background-color", "#" + hex );
       console.log("received:", red, green, blue, "\nhex:", hex, "\npicker_change_progress",picker_change_progress);
       $('#full').spectrum("set", hex) // seems spectrum's change is not being called if color wasn't changed
-
-
-
     }
 
 /*
@@ -220,7 +245,7 @@ $("#full").spectrum({
    // $( "#green" ).slider( "value", 140 );
   //  $( "#blue" ).slider( "value", 60 );
 
-
+    getData();
 
 
 });
