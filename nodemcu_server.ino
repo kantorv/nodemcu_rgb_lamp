@@ -324,7 +324,7 @@ void openPicker() {
      <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.js'></script> \
     <script src='http://bgrins.github.io/spectrum/spectrum.js'></script> \
     <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/main.js'></script> \
-     <script src='http://192.168.1.123:8080/frontend/js/jquery.ui.touch-punch.min.js'></script> \
+     <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/jquery.ui.touch-punch.min.js'></script> \
     </body>\
 </html>",
 
