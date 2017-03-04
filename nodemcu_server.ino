@@ -327,8 +327,8 @@ void openPicker() {
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
     </style>\
-    <link rel='stylesheet' href='http://bgrins.github.io/spectrum/spectrum.css' /> \
-    <link rel='stylesheet' href='//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css'> \
+    <link rel='stylesheet' href='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/css/spectrum.css' /> \
+    <link rel='stylesheet' href='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/css/jquery-ui.css'> \
     <link rel='stylesheet' href='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/css/main.css' /> \
   </head>\
   <body>\
