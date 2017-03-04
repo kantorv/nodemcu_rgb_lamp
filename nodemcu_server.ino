@@ -168,10 +168,14 @@ void retreiveCurrentSettings(){
 }
 
 void handleBrightness(){
+
   String message = "brightness not  found";
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if( server.argName ( i )  == "brightness"){
-       brightness =  server.arg ( i ).toInt() ;
+       int new_brightness =  server.arg ( i ).toInt() ;
+       int diff = new_brightness - brightness;
+       int _step = diff/abs(diff);
+
 
       if(rgb_value){
           String xval = getValue(rgb_value, ':', 0);
@@ -183,7 +187,19 @@ void handleBrightness(){
           int blue = zval.toInt();
           message = "Reseived " + server.argName ( i ) + ": brightness" + brightness + ";\nRGB: " + rgb_value;
           Serial.println(message);
-          setValue(red*4,green*4,blue*4, brightness);
+
+          for(int i=1;i<=abs(diff);i++){
+
+             setValue(red*4,green*4,blue*4, brightness+ i*_step);
+             Serial.println("Setting brightness:" + String(i));
+             delay(10);
+          }
+
+          brightness = new_brightness;
+
+
+
+
       }
       else{
 
@@ -214,7 +230,13 @@ void handleColor(){
   String message = "Color not  found";
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if( server.argName ( i )  == "color"){
-      hexcolor =  server.arg ( i ) ;
+       hexcolor =  server.arg ( i ) ;
+
+
+
+
+
+
       String past_rgb_val = rgb_value;
       rgb_value = hex2rgb(hexcolor);
       String xval = getValue(rgb_value, ':', 0);
@@ -250,7 +272,7 @@ void handleColor(){
 
        Serial.println(message);
 
-       int total_steps = 100;
+       int total_steps = 10;
 
 
       // setValue(red*4,green*4,blue*4, brightness);
@@ -277,6 +299,10 @@ void handleColor(){
        break;
       }
   }
+
+
+
+
   server.send ( 200, "text/plain", message );
 }
 
