@@ -338,11 +338,11 @@ void openPicker() {
     <div id='slider' style='margin: 10px 0;'></div> \
     <div class='ui-widget-content' id='slide_pickers_holder'><p class='ui-state-default ui-corner-all ui-helper-clearfix' style='padding:4px;margin:0;'> <span class='ui-icon ui-icon-pencil' style='float:left; margin:-2px 5px 0 0;'></span>Simple Colorpicker</p><div id='red'></div><div id='green'></div><div id='blue'></div><div id='swatch' class='ui-widget-content ui-corner-all'></div></div> \
     <input type='text' id='full' /> \
-    <script src='https://code.jquery.com/jquery-3.1.1.min.js'></script> \
-     <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.js'></script> \
-    <script src='http://bgrins.github.io/spectrum/spectrum.js'></script> \
+    <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/jquery-3.1.1.min.js'></script> \
+    <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/jquery-ui.js'></script> \
+    <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/spectrum.js'></script> \
     <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/main.js'></script> \
-     <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/jquery.ui.touch-punch.min.js'></script> \
+    <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/jquery.ui.touch-punch.min.js'></script> \
     </body>\
 </html>",
 
