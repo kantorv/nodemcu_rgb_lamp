@@ -1,3 +1,4 @@
+#include <math.h>
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 //needed for library
 #include <DNSServer.h>
@@ -41,35 +42,6 @@ int brightness = 100;
 String rgb_value;
 int redValue, greenValue, blueValue;
 
-void handleRoot() {
-  digitalWrite ( led, 1 );
-  char temp[400];
-  int sec = millis() / 1000;
-  int min = sec / 60;
-  int hr = min / 60;
-
-  snprintf ( temp, 400,
-
-"<html>\
-  <head>\
-    <meta http-equiv='refresh' content='5'/>\
-    <title>ESP8266 Demo</title>\
-    <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
-    </style>\
-  </head>\
-  <body>\
-    <h1>Hello from ESP8266!</h1>\
-    <p>Uptime: %02d:%02d:%02d</p>\
-    <img src=\"/test.svg\" />\
-  </body>\
-</html>",
-
-    hr, min % 60, sec % 60
-  );
-  server.send ( 200, "text/html", temp );
-  digitalWrite ( led, 0 );
-}
 
 void handleNotFound() {
   digitalWrite ( led, 1 );
@@ -121,15 +93,13 @@ void setup ( void ) {
   digitalWrite ( led, 0 );
 
 
-  server.on ( "/", handleRoot );
-  server.on ( "/test.svg", drawGraph );
+  server.on ( "/", openPicker );
   server.on ( "/settings", retreiveCurrentSettings );
   server.on ( "/setcolor", handleColor );
   server.on ( "/brightness", handleBrightness );
   server.on ( "/inline", []() {
     server.send ( 200, "text/plain", "this works as well" );
   } );
-  server.on ( "/color", openPicker );
   server.onNotFound ( handleNotFound );
   server.begin();
   Serial.println ( "HTTP server started" );
@@ -161,7 +131,7 @@ String  hex2rgb(String str){
     blueValue = b;
     return out;
 
-  }
+}
 
 void  setValue(int r, int g, int b, int brightness){
   //   g = 255 - g;
@@ -198,7 +168,6 @@ void retreiveCurrentSettings(){
 }
 
 void handleBrightness(){
-
   String message = "brightness not  found";
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if( server.argName ( i )  == "brightness"){
@@ -245,7 +214,7 @@ void handleColor(){
   String message = "Color not  found";
   for ( uint8_t i = 0; i < server.args(); i++ ) {
     if( server.argName ( i )  == "color"){
-       hexcolor =  server.arg ( i ) ;
+      hexcolor =  server.arg ( i ) ;
       String past_rgb_val = rgb_value;
       rgb_value = hex2rgb(hexcolor);
       String xval = getValue(rgb_value, ':', 0);
@@ -256,39 +225,62 @@ void handleColor(){
       int green = yval.toInt();
       int blue = zval.toInt();
 
-       message = "Past rgb: " + past_rgb_val + "\n"+ "Past brightness: " + String(brightness) + "%\n"+ "Reseived " + server.argName ( i ) + ": #" + hexcolor + "; rgb(" + xval +"," +yval+"," +  zval + ")\n";
-       setValue(red*4,green*4,blue*4, brightness);
+
+      String _xval = getValue(past_rgb_val, ':', 0);
+      String _yval = getValue(past_rgb_val, ':', 1);
+      String _zval = getValue(past_rgb_val, ':', 2);
+
+      int _red = _xval.toInt();
+      int _green = _yval.toInt();
+      int _blue = _zval.toInt();
+
+
+
+
+      int _red_diff = red - _red;
+      int _green_diff = green - _green;
+      int _blue_diff = blue -_blue;
+
+      message = "New: (" +  String(red) + "," +  String(green) + "," +  String(blue) + ")\n";
+      message += "Old: (" +  String(_red) + "," +  String(_green) + "," +  String(_blue) + ")\n";
+      message += "Diff: (" +  String(_red_diff) + "," +  String(_green_diff) + "," +  String(_blue_diff) + ")";
+      Serial.println(message);
+
+      message = "Past rgb: " + past_rgb_val + "\n"+ "Past brightness: " + String(brightness) + "%\n"+ "Reseived " + server.argName ( i ) + ": #" + hexcolor + "; rgb(" + xval +"," +yval+"," +  zval + ")\n";
+
        Serial.println(message);
 
+       int total_steps = 100;
 
 
+      // setValue(red*4,green*4,blue*4, brightness);
+       float red_step = _red_diff/(float)total_steps;
+       float blue_step = _blue_diff/(float)total_steps;
+       float green_step = _green_diff/(float)total_steps;
+
+       Serial.println("\nCalculating steps");
+       message = "Steps: (" +  String(red_step) + "," +  String(green_step) + "," +  String(blue_step) + ")\n";
+       Serial.println(message);
+
+       for(int i=1;i<=total_steps;i++){
+          int new_red = round(_red + red_step*i);
+          int  new_green = round(_green + green_step*i);
+          int  new_blue =round( _blue + blue_step*i);
+
+          message = "Step " + String(i) + ": (" + String(new_red) + "," + String(new_green) + "," + String(new_blue)  + ")";
+          Serial.println(message);
+
+          setValue(new_red*4,new_green*4,new_blue*4, brightness);
+          delay(10);
+
+       }
        break;
       }
   }
-
-
-
-
   server.send ( 200, "text/plain", message );
 }
 
-void drawGraph() {
-  String out = "";
-  char temp[100];
-  out += "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"400\" height=\"150\">\n";
-  out += "<rect width=\"400\" height=\"150\" fill=\"rgb(250, 230, 210)\" stroke-width=\"1\" stroke=\"rgb(0, 0, 0)\" />\n";
-  out += "<g stroke=\"black\">\n";
-  int y = rand() % 130;
-  for (int x = 10; x < 390; x+= 10) {
-    int y2 = rand() % 130;
-    sprintf(temp, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke-width=\"1\" />\n", x, 140 - y, x + 10, 140 - y2);
-    out += temp;
-    y = y2;
-  }
-  out += "</g>\n</svg>\n";
 
-  server.send ( 200, "image/svg+xml", out);
-}
 
 
 
@@ -327,8 +319,6 @@ void openPicker() {
      <script src='https://kantorv.github.io/nodemcu_rgb_lamp/frontend/js/jquery.ui.touch-punch.min.js'></script> \
     </body>\
 </html>",
-
-
 
     hr, min % 60, sec % 60
   );
