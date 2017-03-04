@@ -1,3 +1,4 @@
+#include <math.h>
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 //needed for library
 #include <DNSServer.h>
@@ -145,9 +146,6 @@ void  setValue(int r, int g, int b, int brightness){
 }
 
 
-
-
-
 String getValue(String data, char separator, int index)
 {
     int found = 0;
@@ -164,15 +162,10 @@ String getValue(String data, char separator, int index)
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
-
-
-
 void retreiveCurrentSettings(){
   String message =  "{\"result\":\"OK\",\"brightness\":\""+String(brightness)+"\",\"rgb\":\""+rgb_value+"\"}";
    server.send ( 200, "application/json", message );
 }
-
-
 
 void handleBrightness(){
   String message = "brightness not  found";
@@ -193,11 +186,24 @@ void handleBrightness(){
           setValue(red*4,green*4,blue*4, brightness);
       }
       else{
+
         message = "No prev RGB value stored";
-      }
-       break;
     }
+
+
+
+     //  setValue(red*4,green*4,blue*4);
+
+
+
+
+       break;
+      }
   }
+
+
+
+
   server.send ( 200, "text/plain", message );
 }
 
@@ -219,9 +225,55 @@ void handleColor(){
       int green = yval.toInt();
       int blue = zval.toInt();
 
-       message = "Past rgb: " + past_rgb_val + "\n"+ "Past brightness: " + String(brightness) + "%\n"+ "Reseived " + server.argName ( i ) + ": #" + hexcolor + "; rgb(" + xval +"," +yval+"," +  zval + ")\n";
-       setValue(red*4,green*4,blue*4, brightness);
+
+      String _xval = getValue(past_rgb_val, ':', 0);
+      String _yval = getValue(past_rgb_val, ':', 1);
+      String _zval = getValue(past_rgb_val, ':', 2);
+
+      int _red = _xval.toInt();
+      int _green = _yval.toInt();
+      int _blue = _zval.toInt();
+
+
+
+
+      int _red_diff = red - _red;
+      int _green_diff = green - _green;
+      int _blue_diff = blue -_blue;
+
+      message = "New: (" +  String(red) + "," +  String(green) + "," +  String(blue) + ")\n";
+      message += "Old: (" +  String(_red) + "," +  String(_green) + "," +  String(_blue) + ")\n";
+      message += "Diff: (" +  String(_red_diff) + "," +  String(_green_diff) + "," +  String(_blue_diff) + ")";
+      Serial.println(message);
+
+      message = "Past rgb: " + past_rgb_val + "\n"+ "Past brightness: " + String(brightness) + "%\n"+ "Reseived " + server.argName ( i ) + ": #" + hexcolor + "; rgb(" + xval +"," +yval+"," +  zval + ")\n";
+
        Serial.println(message);
+
+       int total_steps = 100;
+
+
+      // setValue(red*4,green*4,blue*4, brightness);
+       float red_step = _red_diff/(float)total_steps;
+       float blue_step = _blue_diff/(float)total_steps;
+       float green_step = _green_diff/(float)total_steps;
+
+       Serial.println("\nCalculating steps");
+       message = "Steps: (" +  String(red_step) + "," +  String(green_step) + "," +  String(blue_step) + ")\n";
+       Serial.println(message);
+
+       for(int i=1;i<=total_steps;i++){
+          int new_red = round(_red + red_step*i);
+          int  new_green = round(_green + green_step*i);
+          int  new_blue =round( _blue + blue_step*i);
+
+          message = "Step " + String(i) + ": (" + String(new_red) + "," + String(new_green) + "," + String(new_blue)  + ")";
+          Serial.println(message);
+
+          setValue(new_red*4,new_green*4,new_blue*4, brightness);
+          delay(10);
+
+       }
        break;
       }
   }
